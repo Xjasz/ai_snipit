@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+	<TargetFramework>net7.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>Snipit</RootNamespace>
+    <AssemblyName>Snipit</AssemblyName>
+    <ApplicationIcon>Resources\appicon.ico</ApplicationIcon>
+	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	<NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="tesseract_files\tessdata\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="tesseract_files\tesseract.exe" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+   <ItemGroup>
+    <PackageReference Include="Tesseract" Version="5.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+</Project>
