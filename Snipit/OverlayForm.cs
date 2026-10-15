@@ -107,11 +107,12 @@ namespace Snipit
             if (_isDragging)
             {
                 _isDragging = false;
+                Hide();
+                System.Threading.Thread.Sleep(150);
                 if (_dragRect.Width * _dragRect.Height >= 50)
                 {
                     Program.CaptureScreenshot(_dragRect);
                 }
-                Hide();
             }
         }
 

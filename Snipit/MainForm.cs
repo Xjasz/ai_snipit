@@ -66,6 +66,11 @@ namespace Snipit
             Debug.WriteLine("chatGptSubmit_Click:");
             var question = chatGptQuestion.Text;
             var imagePath = Program.currentImagePath;
+            if (string.IsNullOrEmpty(imagePath))
+            {
+                UpdateResponseLabel("Take a snip first.");
+                return;
+            }
             question = question.Contains('?') ? question : question + "?";
 
             _ = chatGptQuestionEvent(imagePath, question);
@@ -101,12 +106,11 @@ namespace Snipit
             Debug.WriteLine("UpdatePictureBox");
             if (snipitScreenShot.InvokeRequired)
             {
-                snipitScreenShot.Invoke(new Action(() => snipitScreenShot.Image = image));
+                snipitScreenShot.Invoke(new Action(() => UpdatePictureBox(image)));
+                return;
             }
-            else
-            {
-                snipitScreenShot.Image = image;
-            }
+            snipitScreenShot.Image?.Dispose();
+            snipitScreenShot.Image = image;
             snipitScreenShot.Invalidate();
             if (useChatGptExtraction)
             {
@@ -142,25 +146,22 @@ namespace Snipit
         private async Task chatGptQuestionEvent(string imagePath, string message)
         {
             Debug.WriteLine($"chatGptQuestionEvent ImagePath:{imagePath} Message:{message}");
-            var apiKey = "APIKEY";
+            var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                UpdateResponseLabel("Set the OPENAI_API_KEY environment variable and restart Snipit.");
+                return;
+            }
             var url = "https://api.openai.com/v1/chat/completions";
             var base64Image = EncodeImageToBase64(imagePath);
 
             using (HttpClient client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
-                var jsonData = $@"
-                    {{
-                        ""model"": ""gpt-4o"",
-                        ""messages"": [
-                            {{
-                                ""role"": ""user"",
-                                ""content"": [
-                                    {{ ""type"": ""text"", ""text"": ""{message}"" }},
-                                    {{ ""type"": ""image_url"", ""image_url"": {{ ""url"": ""data:image/jpeg;base64,{base64Image}"" }}
-                                    }} ] 
-                        }} ], ""max_tokens"": 300
-                    }}";
+                var imageUrl = new { url = $"data:image/png;base64,{base64Image}" };
+                var contentParts = new object[] { new { type = "text", text = message }, new { type = "image_url", image_url = imageUrl } };
+                var body = new { model = "gpt-4o", messages = new[] { new { role = "user", content = contentParts } }, max_tokens = 300 };
+                var jsonData = JsonSerializer.Serialize(body);
 
                 var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
 
@@ -181,11 +182,13 @@ namespace Snipit
                     {
                         Debug.WriteLine($"Error: {response.StatusCode}");
                         Debug.WriteLine(responseBody);
+                        UpdateResponseLabel($"Error {(int)response.StatusCode}: {response.StatusCode}");
                     }
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"Exception: {ex.Message}");
+                    UpdateResponseLabel($"Error: {ex.Message}");
                 }
             }
         }
