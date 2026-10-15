@@ -73,6 +73,8 @@ namespace Snipit
             }
             question = question.Contains('?') ? question : question + "?";
 
+            chatGptSubmit.Enabled = false;
+            UpdateResponseLabel("Loading response...");
             _ = chatGptQuestionEvent(imagePath, question);
 
         }
@@ -116,24 +118,19 @@ namespace Snipit
             {
                 questionPanel.Visible = true;
             }
-            UpdateResponseLabel("Loading response...");
+            UpdateResponseLabel("");
         }
 
         public void UpdateResponseLabel(string text)
         {
             Debug.WriteLine($"UpdateResponseLabel: {text}");
-            if (responseLabel.Visible == false)
-            {
-                responseLabel.Visible = true;
-            }
             if (responseLabel.InvokeRequired)
             {
-                responseLabel.Invoke(new Action(() => responseLabel.Text = text));
+                responseLabel.Invoke(new Action(() => UpdateResponseLabel(text)));
+                return;
             }
-            else
-            {
-                responseLabel.Text = text;
-            }
+            responseLabel.Visible = true;
+            responseLabel.Text = text;
         }
 
         private void snipitScreenShotBackgroundChanged(object sender, EventArgs e)
@@ -150,6 +147,7 @@ namespace Snipit
             if (string.IsNullOrEmpty(apiKey))
             {
                 UpdateResponseLabel("Set the OPENAI_API_KEY environment variable and restart Snipit.");
+                chatGptSubmit.Enabled = true;
                 return;
             }
             var url = "https://api.openai.com/v1/chat/completions";
@@ -182,13 +180,18 @@ namespace Snipit
                     {
                         Debug.WriteLine($"Error: {response.StatusCode}");
                         Debug.WriteLine(responseBody);
-                        UpdateResponseLabel($"Error {(int)response.StatusCode}: {response.StatusCode}");
+                        using var err = JsonDocument.Parse(responseBody);
+                        UpdateResponseLabel($"Error {(int)response.StatusCode}: {err.RootElement.GetProperty("error").GetProperty("message").GetString()}");
                     }
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"Exception: {ex.Message}");
                     UpdateResponseLabel($"Error: {ex.Message}");
+                }
+                finally
+                {
+                    chatGptSubmit.Enabled = true;
                 }
             }
         }
@@ -199,12 +202,12 @@ namespace Snipit
             Debug.WriteLine($"SaveJsonResponse");
             try
             {
-                var jsonFileName = $"{Program.currentImageTime:yyyyMMdd_HHmmss}.json";
+                var jsonFileName = $"{Program.currentImageTime:yyyyMMdd_HHmmss_fff}.json";
                 var jsonFilePath = Path.Combine(Program.gptDirectory, jsonFileName);
                 var same_qcount = 2;
                 while (File.Exists(jsonFilePath))
                 {
-                    jsonFileName = $"{Program.currentImageTime:yyyyMMdd_HHmmss}-{same_qcount}.json";
+                    jsonFileName = $"{Program.currentImageTime:yyyyMMdd_HHmmss_fff}-{same_qcount}.json";
                     jsonFilePath = Path.Combine(Program.gptDirectory, jsonFileName);
                     same_qcount++;
                 }

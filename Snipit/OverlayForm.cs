@@ -28,6 +28,7 @@ namespace Snipit
             Paint += OverlayForm_Paint;
             KeyDown += OverlayForm_KeyDown;
             Activated += (s, e) => Focus();
+            FormClosing += (s, e) => { if (e.CloseReason == CloseReason.UserClosing) { e.Cancel = true; Hide(); } };
         }
 
         public void ShowOverlay()

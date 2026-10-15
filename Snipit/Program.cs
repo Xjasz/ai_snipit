@@ -206,7 +206,7 @@ namespace Snipit
         {
             try
             {
-                string ocrFilePath = Path.Combine(ocrDirectory, $"{currentImageTime:yyyyMMdd_HHmmss}.txt");
+                string ocrFilePath = Path.Combine(ocrDirectory, $"{currentImageTime:yyyyMMdd_HHmmss_fff}.txt");
                 File.WriteAllText(ocrFilePath, text);
                 Debug.WriteLine($"OCR result saved to: {ocrFilePath}");
             }
@@ -227,7 +227,7 @@ namespace Snipit
                         g.CopyFromScreen(dragArea.Location, Point.Empty, dragArea.Size);
                     }
                     currentImageTime = DateTime.Now;
-                    currentImagePath = Path.Combine(snipsDirectory, $"{currentImageTime:yyyyMMdd_HHmmss}.png");
+                    currentImagePath = Path.Combine(snipsDirectory, $"{currentImageTime:yyyyMMdd_HHmmss_fff}.png");
                     bitmap.Save(currentImagePath, System.Drawing.Imaging.ImageFormat.Png);
                     Debug.WriteLine($"Screenshot saved to {currentImagePath}");
                     _mainForm.UpdatePictureBox(new Bitmap(bitmap));
