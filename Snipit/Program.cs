@@ -96,6 +96,7 @@ namespace Snipit
             WM_LBUTTONDOWN = 0x0201, WM_LBUTTONUP = 0x0202, WM_MOUSEMOVE = 0x0200, WM_MOUSEWHEEL = 0x020A, WM_RBUTTONDOWN = 0x0204, WM_RBUTTONUP = 0x0205
         }
 
+        [STAThread]
         public static void Main()
         {
             Debug.WriteLine("Main");
@@ -205,7 +206,7 @@ namespace Snipit
         {
             try
             {
-                string ocrFilePath = Path.Combine(ocrDirectory, $"{currentImageTime:yyyyMMdd_HHmmss}.txt");
+                string ocrFilePath = Path.Combine(ocrDirectory, $"{currentImageTime:yyyyMMdd_HHmmss_fff}.txt");
                 File.WriteAllText(ocrFilePath, text);
                 Debug.WriteLine($"OCR result saved to: {ocrFilePath}");
             }
@@ -226,7 +227,7 @@ namespace Snipit
                         g.CopyFromScreen(dragArea.Location, Point.Empty, dragArea.Size);
                     }
                     currentImageTime = DateTime.Now;
-                    currentImagePath = Path.Combine(snipsDirectory, $"{currentImageTime:yyyyMMdd_HHmmss}.png");
+                    currentImagePath = Path.Combine(snipsDirectory, $"{currentImageTime:yyyyMMdd_HHmmss_fff}.png");
                     bitmap.Save(currentImagePath, System.Drawing.Imaging.ImageFormat.Png);
                     Debug.WriteLine($"Screenshot saved to {currentImagePath}");
                     _mainForm.UpdatePictureBox(new Bitmap(bitmap));
@@ -364,8 +365,8 @@ namespace Snipit
                         {
                             //CheckPixel();
                             //CheckPixelTest();
-                            Thread.Sleep(500);
                         }
+                        Thread.Sleep(500);
                     }
                 }
                 catch (OperationCanceledException)

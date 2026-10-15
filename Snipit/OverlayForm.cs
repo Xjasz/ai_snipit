@@ -28,6 +28,7 @@ namespace Snipit
             Paint += OverlayForm_Paint;
             KeyDown += OverlayForm_KeyDown;
             Activated += (s, e) => Focus();
+            FormClosing += (s, e) => { if (e.CloseReason == CloseReason.UserClosing) { e.Cancel = true; Hide(); } };
         }
 
         public void ShowOverlay()
@@ -107,11 +108,12 @@ namespace Snipit
             if (_isDragging)
             {
                 _isDragging = false;
+                Hide();
+                System.Threading.Thread.Sleep(150);
                 if (_dragRect.Width * _dragRect.Height >= 50)
                 {
                     Program.CaptureScreenshot(_dragRect);
                 }
-                Hide();
             }
         }
 
